@@ -1,0 +1,38 @@
+{
+  "entities": {
+    "Player": {
+      "title": "Player",
+      "description": "A player in the game",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "card": { "type": "object" },
+        "declines": { "type": "number" },
+        "isEliminated": { "type": "boolean" },
+        "wins": { "type": "number" }
+      },
+      "required": ["uid", "displayName"]
+    },
+    "GameState": {
+      "title": "GameState",
+      "description": "The state of a game session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "status": { "type": "string", "enum": ["waiting", "playing", "round_end"] },
+        "players": { "type": "array", "items": { "$ref": "Player" } },
+        "middleCard": { "type": "object" },
+        "turnIndex": { "type": "number" },
+        "roundNumber": { "type": "number" }
+      }
+    }
+  },
+  "firestore": {
+    "/games/{gameId}": {
+      "schema": "GameState",
+      "description": "Game sessions"
+    }
+  }
+}
