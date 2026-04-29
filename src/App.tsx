@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db } from './firebase';
-import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
+import { signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { GameState, Player } from './types';
 import { createGame, joinGame, startGame, flipMiddleCard, initiateBackShow, respondToBackShow, resetRound, clearShowResult } from './gameService';
@@ -312,7 +312,7 @@ export default function App() {
   const handleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithRedirect(auth, provider);
     } catch (err) {
       setError('Login failed');
     }
