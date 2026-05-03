@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db } from './firebase';
-import { signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
+import { signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { GameState, Player } from './types';
 import { createGame, joinGame, startGame, flipMiddleCard, initiateBackShow, respondToBackShow, resetRound, clearShowResult } from './gameService';
@@ -237,6 +237,9 @@ export default function App() {
       setUser(u);
       setLoading(false);
     });
+    getRedirectResult(auth).catch((err: any) => {
+      if (err?.code) setError(err.code);
+    });
     return unsubscribe;
   }, []);
 
@@ -313,8 +316,9 @@ export default function App() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithRedirect(auth, provider);
-    } catch (err) {
-      setError('Login failed');
+    } catch (err: any) {
+      console.error('Sign-in error:', err?.code, err?.message);
+      setError(err?.code || err?.message || 'Login failed');
     }
   };
 
@@ -372,13 +376,18 @@ export default function App() {
           <h1 className="text-5xl font-black mb-2 tracking-tighter text-yellow-400">EK PATTI</h1>
           <p className="text-slate-400 mb-8 italic">One Card. One Middle. One Imaginary. Pure Strategy.</p>
           
-          <button 
+          <button
             onClick={handleLogin}
             className="w-full flex items-center justify-center gap-3 bg-white text-slate-900 font-bold py-4 rounded-xl hover:bg-slate-100 transition-all active:scale-95"
           >
             <LogIn size={20} />
             Sign in with Google
           </button>
+          {error && (
+            <div className="mt-4 bg-red-500/20 border border-red-500/40 text-red-300 text-sm px-4 py-2 rounded-lg break-all">
+              {error}
+            </div>
+          )}
         </motion.div>
       </div>
     );
