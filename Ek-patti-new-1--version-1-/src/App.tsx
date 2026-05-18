@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db } from './firebase';
-import { signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
+import { signInAnonymously, updateProfile, onAuthStateChanged, User } from 'firebase/auth';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { GameState, Player } from './types';
 import { createGame, joinGame, startGame, flipMiddleCard, initiateBackShow, respondToBackShow, resetRound, clearShowResult } from './gameService';
@@ -214,6 +214,7 @@ export default function App() {
   const [game, setGame] = useState<GameState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [nameInput, setNameInput] = useState('');
   const [gameIdInput, setGameIdInput] = useState('');
   const [timeLeft, setTimeLeft] = useState(60);
   const [lastAutoActTime, setLastAutoActTime] = useState(0);
@@ -310,11 +311,14 @@ export default function App() {
   };
 
   const handleLogin = async () => {
+    const name = nameInput.trim();
+    if (!name) { setError('Enter your name first'); return; }
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithRedirect(auth, provider);
-    } catch (err) {
-      setError('Login failed');
+      const cred = await signInAnonymously(auth);
+      await updateProfile(cred.user, { displayName: name });
+      setUser({ ...cred.user, displayName: name } as User);
+    } catch (err: any) {
+      setError(err?.message || 'Login failed');
     }
   };
 
@@ -371,13 +375,21 @@ export default function App() {
         >
           <h1 className="text-5xl font-black mb-2 tracking-tighter text-yellow-400">EK PATTI</h1>
           <p className="text-slate-400 mb-8 italic">One Card. One Middle. One Imaginary. Pure Strategy.</p>
-          
-          <button 
+
+          <input
+            type="text"
+            placeholder="Enter your name"
+            value={nameInput}
+            onChange={e => setNameInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleLogin()}
+            className="w-full bg-slate-700 text-white placeholder-slate-400 px-4 py-3 rounded-xl mb-3 outline-none focus:ring-2 focus:ring-yellow-400"
+          />
+          <button
             onClick={handleLogin}
-            className="w-full flex items-center justify-center gap-3 bg-white text-slate-900 font-bold py-4 rounded-xl hover:bg-slate-100 transition-all active:scale-95"
+            className="w-full flex items-center justify-center gap-3 bg-yellow-400 text-slate-900 font-bold py-4 rounded-xl hover:bg-yellow-300 transition-all active:scale-95"
           >
             <LogIn size={20} />
-            Sign in with Google
+            Play
           </button>
         </motion.div>
       </div>
